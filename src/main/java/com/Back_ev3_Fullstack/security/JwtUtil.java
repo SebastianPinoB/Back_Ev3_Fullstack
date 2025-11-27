@@ -1,5 +1,6 @@
 package com.Back_ev3_Fullstack.security;
 
+import com.Back_ev3_Fullstack.entity.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -33,7 +34,7 @@ public class JwtUtil {
         return resolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -60,19 +61,15 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    private Date extractExpiration(String token) {
+    public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    // Generar token a partir de UserDetails para incluir roles
-    public String generateToken(UserDetails userDetails) {
+    // Generar token
+    public String generateToken(String correo, Set<Role> roles) {
         Map<String, Object> claims = new HashMap<>();
-        // extraer roles desde UserDetails y poner en claim
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(auth -> auth.getAuthority().replace("ROLE_", "")) // guardamos sin prefix
-                .collect(Collectors.toList());
         claims.put("roles", roles);
-        return createToken(claims, userDetails.getUsername());
+        return createToken(claims, correo);
     }
 
     private String createToken(Map<String, Object> claims, String subject) {

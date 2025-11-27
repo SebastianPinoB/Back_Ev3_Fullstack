@@ -13,6 +13,7 @@ import com.Back_ev3_Fullstack.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -48,26 +49,25 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         try {
-            // Validar credenciales usando AuthenticationManager
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(req.getCorreo(), req.getContrasenia())
             );
         } catch (BadCredentialsException e) {
-            // Credenciales inválidas
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Credenciales inválidas");
         }
 
-        // Obtener información del usuario
-        UserDetails userDetails = userDetailsService.loadUserByUsername(req.getCorreo());
+        // Cargar usuario desde la BD
+        Usuario usuario = usuarioRepository.findByCorreo(req.getCorreo());
 
-        // Generar token JWT
-        String token = jwtUtil.generateToken(userDetails);
+        // Generar token con correo + roles reales
+        String token = jwtUtil.generateToken(
+                usuario.getCorreo(),
+                usuario.getRoles()
+        );
 
-        // Retornar token en un Map
         return ResponseEntity.ok(Map.of("token", token));
     }
-
 
     @PostMapping("/register")
     public ResponseEntity<String> registro(@RequestBody RegistroRequest request) {
@@ -85,6 +85,18 @@ public class AuthController {
         usuarioRepository.save(usuario);
 
         return ResponseEntity.ok("Usuario registrado correctamente");
+    }
+
+    @GetMapping("/user")
+    @PreAuthorize("hasRole('USER')")
+    public String userOnly() {
+        return "Usuario";
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String adminOnly() {
+        return "Admin";
     }
 
 }

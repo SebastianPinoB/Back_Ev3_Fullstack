@@ -4,7 +4,6 @@ import com.Back_ev3_Fullstack.dto.CategoriaRequestDTO;
 import com.Back_ev3_Fullstack.dto.CategoriaResponseDTO;
 import com.Back_ev3_Fullstack.service.CategoriaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
